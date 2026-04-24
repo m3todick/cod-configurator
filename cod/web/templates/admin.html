@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Администрирование — ЦОД</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Raleway:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/static/css/main.css">
+</head>
+<body>
+<nav class="navbar">
+  <a href="/" class="navbar-brand">
+    <div class="logo-icon">⚡</div>
+    <div>ЦОД Конфигуратор<span class="sub">Администрация Константиновского района</span></div>
+  </a>
+  <div class="navbar-nav">
+    <a href="/">Главная</a>
+    <a href="/configurator">Конфигуратор</a>
+    <a href="/calculator">Калькулятор</a>
+    <a href="/cabinet" id="nav-cabinet">Кабинет</a>
+    <a href="/admin" class="active" id="nav-admin">Администрирование</a>
+  </div>
+  <div class="navbar-actions">
+    <button class="btn btn-outline btn-sm" onclick="logout()">Выйти</button>
+  </div>
+  <button class="nav-toggle" aria-label="Меню" onclick="toggleNav()">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<main class="page">
+  <div class="page-header">
+    <div class="container">
+      <div class="breadcrumb"><a href="/">Главная</a><span class="sep">›</span> Администрирование</div>
+      <h1>🛠 Панель администратора</h1>
+      <p>Управление каталогом оборудования и конфигурациями пользователей</p>
+    </div>
+  </div>
+
+  <div class="container" style="padding-top:28px;padding-bottom:48px;">
+
+    <!-- Access denied -->
+    <div id="access-denied" style="display:none;" class="loading-state">
+      <div style="font-size:48px;margin-bottom:12px;">🔒</div>
+      <p style="margin-bottom:16px;">Доступ разрешён только администраторам</p>
+      <a href="/" class="btn btn-primary">На главную</a>
+    </div>
+
+    <div id="admin-content" style="display:none;">
+      <!-- Stats row -->
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:28px;">
+        <div class="card"><div class="card-body" style="padding:18px;">
+          <div style="font-size:0.72rem;text-transform:uppercase;letter-spacing:0.05em;color:var(--text-muted);margin-bottom:6px;">Позиций каталога</div>
+          <div style="font-size:1.8rem;font-weight:800;color:var(--primary);" id="stat-components">—</div>
+        </div></div>
+        <div class="card"><div class="card-body" style="padding:18px;">
+          <div style="font-size:0.72rem;text-transform:uppercase;letter-spacing:0.05em;color:var(--text-muted);margin-bottom:6px;">Конфигураций</div>
+          <div style="font-size:1.8rem;font-weight:800;color:var(--success);" id="stat-configs">—</div>
+        </div></div>
+        <div class="card"><div class="card-body" style="padding:18px;">
+          <div style="font-size:0.72rem;text-transform:uppercase;letter-spacing:0.05em;color:var(--text-muted);margin-bottom:6px;">В наличии</div>
+          <div style="font-size:1.8rem;font-weight:800;color:var(--warning);" id="stat-instock">—</div>
+        </div></div>
+        <div class="card"><div class="card-body" style="padding:18px;">
+          <div style="font-size:0.72rem;text-transform:uppercase;letter-spacing:0.05em;color:var(--text-muted);margin-bottom:6px;">Категорий</div>
+          <div style="font-size:1.8rem;font-weight:800;" id="stat-cats">6</div>
+        </div></div>
+      </div>
+
+      <!-- Tabs -->
+      <div class="admin-tabs">
+        <div class="admin-tab active" onclick="switchTab('components',this)">⚙️ Каталог оборудования</div>
+        <div class="admin-tab" onclick="switchTab('configurations',this)">📋 Конфигурации</div>
+      </div>
+
+      <!-- Components tab -->
+      <div id="tab-components">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:12px;">
+          <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+            <input type="text" id="comp-search" class="form-control" placeholder="🔍 Поиск..." style="width:220px;" oninput="renderCompTable()">
+            <select id="comp-cat-filter" class="form-control form-select" style="width:180px;" onchange="renderCompTable()">
+              <option value="">Все категории</option>
+              <option value="server">Серверы</option>
+              <option value="storage">Хранилища</option>
+              <option value="network">Сеть</option>
+              <option value="cooling">Охлаждение</option>
+              <option value="power">Питание</option>
+              <option value="security">Безопасность</option>
+            </select>
+          </div>
+          <button class="btn btn-primary" onclick="openAddModal()">➕ Добавить позицию</button>
+        </div>
+
+        <div class="card">
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Наименование</th>
+                  <th>Категория</th>
+                  <th>Бренд / Модель</th>
+                  <th>Цена</th>
+                  <th>Наличие</th>
+                  <th>Действия</th>
+                </tr>
+              </thead>
+              <tbody id="comp-table-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Configurations tab -->
+      <div id="tab-configurations" style="display:none;">
+        <div style="margin-bottom:16px;">
+          <h3 style="font-size:1rem;font-weight:700;color:var(--text-secondary);">Все конфигурации пользователей</h3>
+        </div>
+        <div class="card">
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Название</th>
+                  <th>Пользователь</th>
+                  <th>Позиций</th>
+                  <th>Стоимость</th>
+                  <th>Дата</th>
+                  <th>Действия</th>
+                </tr>
+              </thead>
+              <tbody id="cfg-table-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- Add/Edit Component Modal -->
+<div class="modal-overlay" id="comp-modal" onclick="if(event.target===this)closeModal('comp-modal')">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="comp-modal-title">Добавить оборудование</h3>
+      <button class="btn btn-ghost btn-icon" onclick="closeModal('comp-modal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="edit-id">
+      <div class="grid-2">
+        <div class="form-group" style="grid-column:span 2;">
+          <label class="form-label">Наименование *</label>
+          <input class="form-control" id="f-name" placeholder="Например: HP ProLiant DL380 Gen10">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Категория *</label>
+          <select class="form-control form-select" id="f-category">
+            <option value="server">🖥 Серверы</option>
+            <option value="storage">💾 Хранилища</option>
+            <option value="network">🌐 Сеть</option>
+            <option value="cooling">❄️ Охлаждение</option>
+            <option value="power">⚡ Питание</option>
+            <option value="security">🔒 Безопасность</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Цена (₽) *</label>
+          <input class="form-control" id="f-price" type="number" placeholder="490000">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Бренд</label>
+          <input class="form-control" id="f-brand" placeholder="HP, Dell, Cisco...">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Модель</label>
+          <input class="form-control" id="f-model" placeholder="DL380 Gen10">
+        </div>
+        <div class="form-group" style="grid-column:span 2;">
+          <label class="form-label">Описание</label>
+          <textarea class="form-control" id="f-desc" rows="2" placeholder="Краткое описание оборудования"></textarea>
+        </div>
+        <div class="form-group" style="grid-column:span 2;">
+          <label class="form-label">Характеристики (ключ=значение, каждая с новой строки)</label>
+          <textarea class="form-control" id="f-specs" rows="4" placeholder="CPU=2x Intel Xeon Gold&#10;RAM=64GB DDR4&#10;HDD=2x 600GB SAS"></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">В наличии</label>
+          <select class="form-control form-select" id="f-instock">
+            <option value="true">✓ Да, в наличии</option>
+            <option value="false">✕ Нет в наличии</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('comp-modal')">Отмена</button>
+      <button class="btn btn-primary" onclick="saveComponent()">💾 Сохранить</button>
+    </div>
+  </div>
+</div>
+
+<!-- Delete confirm modal -->
+<div class="modal-overlay" id="del-modal" onclick="if(event.target===this)closeModal('del-modal')">
+  <div class="modal" style="max-width:400px;">
+    <div class="modal-header">
+      <h3>Подтвердите удаление</h3>
+      <button class="btn btn-ghost btn-icon" onclick="closeModal('del-modal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <p style="color:var(--text-secondary);">Вы уверены, что хотите удалить <strong id="del-name"></strong>? Это действие необратимо.</p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('del-modal')">Отмена</button>
+      <button class="btn btn-danger" id="del-confirm-btn">🗑 Удалить</button>
+    </div>
+  </div>
+</div>
+
+<script src="/static/js/common.js"></script>
+<script>
+let components = [];
+let allConfigs = [];
+let editingId = null;
+
+async function init() {
+  const user = await loadCurrentUser();
+  if (!user || user.role !== 'admin') {
+    document.getElementById('access-denied').style.display = 'block';
+    return;
+  }
+  document.getElementById('admin-content').style.display = 'block';
+  updateNavAuth(user);
+  await Promise.all([loadComponents(), loadConfigs()]);
+}
+
+async function loadComponents() {
+  try {
+    components = await http.get('/api/components');
+    document.getElementById('stat-components').textContent = components.length;
+    document.getElementById('stat-instock').textContent = components.filter(c=>c.in_stock).length;
+    renderCompTable();
+  } catch(e) { toast.error('Ошибка загрузки'); }
+}
+
+async function loadConfigs() {
+  try {
+    allConfigs = await http.get('/api/configurations');
+    document.getElementById('stat-configs').textContent = allConfigs.length;
+    renderCfgTable();
+  } catch(e) {}
+}
+
+function renderCompTable() {
+  const q = document.getElementById('comp-search').value.toLowerCase();
+  const cat = document.getElementById('comp-cat-filter').value;
+  const filtered = components.filter(c => {
+    const mq = !q || c.name.toLowerCase().includes(q) || c.brand.toLowerCase().includes(q);
+    const mc = !cat || c.category === cat;
+    return mq && mc;
+  });
+
+  document.getElementById('comp-table-body').innerHTML = filtered.length
+    ? filtered.map(c => `
+      <tr>
+        <td><span style="font-weight:600;">${c.name}</span></td>
+        <td><span class="badge badge-primary">${catIcons[c.category]||''} ${catLabels[c.category]||c.category}</span></td>
+        <td style="color:var(--text-secondary);">${c.brand} / ${c.model}</td>
+        <td style="font-weight:700;color:var(--primary);">${fmt.money(c.price)}</td>
+        <td><span class="badge ${c.in_stock?'badge-success':'badge-danger'}">${c.in_stock?'✓ Есть':'✕ Нет'}</span></td>
+        <td>
+          <div style="display:flex;gap:6px;">
+            <button class="btn btn-outline btn-sm" onclick="openEditModal('${c.id}')">✏️ Изменить</button>
+            <button class="btn btn-danger btn-sm" onclick="confirmDelete('${c.id}','${c.name.replace(/'/g,"\\'")}')">🗑</button>
+          </div>
+        </td>
+      </tr>`).join('')
+    : '<tr><td colspan="6" style="text-align:center;padding:30px;color:var(--text-muted);">Ничего не найдено</td></tr>';
+}
+
+function renderCfgTable() {
+  document.getElementById('cfg-table-body').innerHTML = allConfigs.length
+    ? allConfigs.map(cfg => `
+      <tr>
+        <td style="font-weight:600;">${cfg.name || '—'}</td>
+        <td style="color:var(--text-muted);">${cfg.user_id}</td>
+        <td>${cfg.items ? cfg.items.reduce((s,i)=>s+i.quantity,0) : 0}</td>
+        <td style="font-weight:700;color:var(--primary);">${fmt.money(cfg.total_cost)}</td>
+        <td style="color:var(--text-muted);">${fmt.date(cfg.created_at)}</td>
+        <td>
+          <a href="/api/configurations/export/${cfg.id}" target="_blank" class="btn btn-outline btn-sm">📤 Экспорт</a>
+        </td>
+      </tr>`).join('')
+    : '<tr><td colspan="6" style="text-align:center;padding:30px;color:var(--text-muted);">Конфигураций нет</td></tr>';
+}
+
+function switchTab(name, el) {
+  document.querySelectorAll('[id^=tab-]').forEach(t => t.style.display = 'none');
+  document.getElementById(`tab-${name}`).style.display = 'block';
+  document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
+  if (el) el.classList.add('active');
+}
+
+function openAddModal() {
+  editingId = null;
+  document.getElementById('comp-modal-title').textContent = '➕ Добавить оборудование';
+  ['f-name','f-price','f-brand','f-model','f-desc','f-specs'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('f-category').value = 'server';
+  document.getElementById('f-instock').value = 'true';
+  document.getElementById('edit-id').value = '';
+  openModal('comp-modal');
+}
+
+function openEditModal(id) {
+  const c = components.find(x => x.id === id);
+  if (!c) return;
+  editingId = id;
+  document.getElementById('comp-modal-title').textContent = '✏️ Редактировать оборудование';
+  document.getElementById('edit-id').value = id;
+  document.getElementById('f-name').value = c.name;
+  document.getElementById('f-category').value = c.category;
+  document.getElementById('f-price').value = c.price;
+  document.getElementById('f-brand').value = c.brand || '';
+  document.getElementById('f-model').value = c.model || '';
+  document.getElementById('f-desc').value = c.description || '';
+  document.getElementById('f-instock').value = c.in_stock ? 'true' : 'false';
+  // specs
+  const specs = c.specs || {};
+  document.getElementById('f-specs').value = Object.entries(specs).map(([k,v]) => `${k}=${v}`).join('\n');
+  openModal('comp-modal');
+}
+
+async function saveComponent() {
+  const name = document.getElementById('f-name').value.trim();
+  const price = parseFloat(document.getElementById('f-price').value);
+  if (!name || isNaN(price)) { toast.error('Заполните обязательные поля'); return; }
+
+  // Parse specs
+  const specsRaw = document.getElementById('f-specs').value.trim();
+  const specs = {};
+  if (specsRaw) {
+    specsRaw.split('\n').forEach(line => {
+      const idx = line.indexOf('=');
+      if (idx > 0) specs[line.slice(0,idx).trim()] = line.slice(idx+1).trim();
+    });
+  }
+
+  const payload = {
+    name,
+    category: document.getElementById('f-category').value,
+    price,
+    brand: document.getElementById('f-brand').value.trim(),
+    model: document.getElementById('f-model').value.trim(),
+    description: document.getElementById('f-desc').value.trim(),
+    in_stock: document.getElementById('f-instock').value === 'true',
+    specs,
+    image: `/static/img/${document.getElementById('f-category').value === 'server' ? 'server1' :
+             document.getElementById('f-category').value === 'storage' ? 'storage' :
+             document.getElementById('f-category').value === 'network' ? 'network' :
+             document.getElementById('f-category').value === 'cooling' ? 'cooling' :
+             document.getElementById('f-category').value === 'power' ? 'ups' : 'security'}.svg`
+  };
+
+  try {
+    if (editingId) {
+      await http.put(`/api/components/${editingId}`, payload);
+      toast.success('Позиция обновлена');
+    } else {
+      await http.post('/api/components', payload);
+      toast.success('Позиция добавлена');
+    }
+    closeModal('comp-modal');
+    await loadComponents();
+  } catch(e) { toast.error(e.message); }
+}
+
+function confirmDelete(id, name) {
+  document.getElementById('del-name').textContent = name;
+  document.getElementById('del-confirm-btn').onclick = async () => {
+    try {
+      await http.del(`/api/components/${id}`);
+      toast.success('Позиция удалена');
+      closeModal('del-modal');
+      await loadComponents();
+    } catch(e) { toast.error(e.message); }
+  };
+  openModal('del-modal');
+}
+
+async function logout() {
+  await http.post('/api/auth/logout', {});
+  location.href = '/';
+}
+
+init();
+</script>
+</body>
+</html>

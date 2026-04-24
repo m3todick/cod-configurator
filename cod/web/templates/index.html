@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ЦОД Конфигуратор — Администрация Константиновского района</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Raleway:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/static/css/main.css">
+</head>
+<body>
+
+<!-- Navbar -->
+<nav class="navbar">
+  <a href="/" class="navbar-brand">
+    <div class="logo-icon">⚡</div>
+    <div>
+      ЦОД Конфигуратор
+      <span class="sub">Администрация Константиновского района</span>
+    </div>
+  </a>
+  <div class="navbar-nav">
+    <a href="/" class="active">Главная</a>
+    <a href="/configurator">Конфигуратор</a>
+    <a href="/calculator">Калькулятор</a>
+    <a href="/cabinet" id="nav-cabinet" style="display:none">Кабинет</a>
+    <a href="/admin" id="nav-admin" style="display:none">Администрирование</a>
+  </div>
+  <div class="navbar-actions">
+    <a href="/login" class="btn btn-primary" id="nav-login">Войти</a>
+  </div>
+  <button class="nav-toggle" aria-label="Меню" onclick="toggleNav()">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<main class="page">
+
+  <!-- Hero -->
+  <section class="hero hero-dark">
+    <div class="hero-particles" id="heroParticles"></div>
+    <div class="container">
+      <div class="hero-inner">
+        <div class="reveal-up">
+          <div class="hero-badge">
+            <span class="dot"></span>
+            Официальная система закупок ЦОД
+          </div>
+          <h1 class="hero-title">Конфигуратор<br>оборудования <span class="gradient-text">ЦОД</span></h1>
+          <p>Профессиональная платформа для подбора, расчёта и закупки оборудования центра обработки данных Администрации Константиновского района Ростовской области.</p>
+          <div class="hero-actions">
+            <a href="/configurator" class="btn btn-primary btn-lg btn-glow">
+              ⚙️ Начать конфигурацию
+            </a>
+            <a href="/calculator" class="btn btn-outline-light btn-lg">
+              🧮 Калькулятор стоимости
+            </a>
+          </div>
+        </div>
+        <div class="hero-visual reveal-up stagger-3">
+          <div class="hero-datacenter">
+            <div class="rack-label">Стойка ЦОД — Предварительный просмотр</div>
+            <div class="dc-rack">
+              <div class="dc-unit server"><span class="led led-blink"></span> HP ProLiant DL380 Gen10 × 2</div>
+              <div class="dc-unit server"><span class="led led-blink stagger-1"></span> Dell PowerEdge R740 × 1</div>
+              <div class="dc-unit network"><span class="led led-blink stagger-2"></span> Cisco Nexus 9300</div>
+              <div class="dc-unit storage"><span class="led led-blink stagger-3"></span> NetApp AFF A250</div>
+              <div class="dc-unit server"><span class="led led-blink stagger-1"></span> Lenovo ThinkSystem SR650</div>
+              <div class="dc-unit network"><span class="led led-blink stagger-4"></span> Cisco ASR 1002-HX</div>
+              <div class="dc-unit storage"><span class="led led-blink stagger-2"></span> Dell EMC PowerStore 500T</div>
+            </div>
+            <div class="dc-stats">
+              <div class="dc-stat"><div class="val counter" data-target="99.9" data-suffix="%">0%</div><div class="label">Готовность</div></div>
+              <div class="dc-stat"><div class="val">Tier III</div><div class="label">Надёжность</div></div>
+              <div class="dc-stat"><div class="val">2.1M ₽</div><div class="label">Конфигурация</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="hero-wave">
+      <svg viewBox="0 0 1440 60" fill="none" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
+        <path d="M0 60L60 50C120 40 240 20 360 15C480 10 600 20 720 25C840 30 960 30 1080 25C1200 20 1320 10 1380 5L1440 0V60H0Z" fill="#F8FAFC"/>
+      </svg>
+    </div>
+  </section>
+
+  <!-- Stats -->
+  <div class="stats-bar">
+    <div class="container">
+      <div class="stat-item reveal-up stagger-1"><div class="number counter-anim" data-target="13">0</div><div class="stat-plus">+</div><div class="label">Категорий оборудования</div></div>
+      <div class="stat-item reveal-up stagger-2"><div class="number counter-anim" data-target="50">0</div><div class="stat-plus">+</div><div class="label">Позиций в каталоге</div></div>
+      <div class="stat-item reveal-up stagger-3"><div class="number">Tier I–IV</div><div class="label">Уровни надёжности</div></div>
+      <div class="stat-item reveal-up stagger-4"><div class="number">ГОСТ</div><div class="label">Соответствие стандартам</div></div>
+    </div>
+  </div>
+
+  <!-- Features -->
+  <section class="section">
+    <div class="container">
+      <div class="section-header reveal-up">
+        <div class="section-tag">Возможности платформы</div>
+        <h2>Всё для закупки оборудования ЦОД</h2>
+        <p class="lead">Единая система для подбора, конфигурирования и расчёта стоимости инфраструктуры центра обработки данных.</p>
+      </div>
+      <div class="features-grid">
+        <div class="feature-card reveal-up stagger-1">
+          <div class="feature-icon">⚙️</div>
+          <h3>Визуальный конфигуратор</h3>
+          <p>Подбирайте серверы, СХД, сетевое и вспомогательное оборудование в удобном интерфейсе с фильтрацией по категориям.</p>
+          <div class="card-shine"></div>
+        </div>
+        <div class="feature-card reveal-up stagger-2">
+          <div class="feature-icon">🧮</div>
+          <h3>Калькулятор стоимости</h3>
+          <p>Быстрая оценка бюджета на основе масштаба инфраструктуры: количества серверов, объёма хранилища, пропускной способности сети.</p>
+          <div class="card-shine"></div>
+        </div>
+        <div class="feature-card reveal-up stagger-3">
+          <div class="feature-icon">💾</div>
+          <h3>Сохранение конфигураций</h3>
+          <p>Создавайте и сохраняйте несколько конфигураций в личном кабинете. Возвращайтесь и редактируйте в любое время.</p>
+          <div class="card-shine"></div>
+        </div>
+        <div class="feature-card reveal-up stagger-1">
+          <div class="feature-icon">📤</div>
+          <h3>Экспорт / Импорт</h3>
+          <p>Экспортируйте конфигурации в формат JSON для согласования с поставщиками. Импортируйте готовые конфигурации от коллег.</p>
+          <div class="card-shine"></div>
+        </div>
+        <div class="feature-card reveal-up stagger-2">
+          <div class="feature-icon">🔒</div>
+          <h3>Безопасность данных</h3>
+          <p>Аутентификация пользователей, ролевое разграничение доступа. Данные администрации защищены по требованиям 149-ФЗ.</p>
+          <div class="card-shine"></div>
+        </div>
+        <div class="feature-card reveal-up stagger-3">
+          <div class="feature-icon">🛠</div>
+          <h3>Администрирование</h3>
+          <p>Панель управления для добавления, редактирования и удаления позиций каталога оборудования без программирования.</p>
+          <div class="card-shine"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Tiers section — dark -->
+  <section class="section section-dark">
+    <div class="container">
+      <div class="section-header reveal-up">
+        <div class="section-tag section-tag-light">Уровни надёжности</div>
+        <h2 style="color:white;">Стандарт TIA-942 — Tier I–IV</h2>
+        <p class="lead" style="color:rgba(255,255,255,0.65);">Система поддерживает проектирование ЦОД на каждом из четырёх уровней надёжности согласно международному стандарту.</p>
+      </div>
+      <div class="tier-cards">
+        <a href="/configurator?tier=1" class="tier-card reveal-up stagger-1">
+          <div class="tier-glow tier-glow-1"></div>
+          <div class="tier-num">I</div>
+          <div class="tier-name">Basic</div>
+          <div class="tier-uptime">99.671% uptime</div>
+          <div class="tier-downtime">~28.8 ч простоя/год</div>
+          <div class="tier-arrow">→ Подобрать</div>
+        </a>
+        <a href="/configurator?tier=2" class="tier-card reveal-up stagger-2">
+          <div class="tier-glow tier-glow-2"></div>
+          <div class="tier-num">II</div>
+          <div class="tier-name">Redundant Components</div>
+          <div class="tier-uptime">99.741% uptime</div>
+          <div class="tier-downtime">~22 ч простоя/год</div>
+          <div class="tier-arrow">→ Подобрать</div>
+        </a>
+        <a href="/configurator?tier=3" class="tier-card tier-card-active reveal-up stagger-3">
+          <div class="tier-glow tier-glow-3"></div>
+          <div class="tier-badge-recommended">Рекомендуется</div>
+          <div class="tier-num">III</div>
+          <div class="tier-name">Concurrently Maintainable</div>
+          <div class="tier-uptime">99.982% uptime</div>
+          <div class="tier-downtime">~1.6 ч простоя/год</div>
+          <div class="tier-arrow">→ Подобрать</div>
+        </a>
+        <a href="/configurator?tier=4" class="tier-card reveal-up stagger-4">
+          <div class="tier-glow tier-glow-4"></div>
+          <div class="tier-num">IV</div>
+          <div class="tier-name">Fault Tolerant</div>
+          <div class="tier-uptime">99.995% uptime</div>
+          <div class="tier-downtime">~26 мин простоя/год</div>
+          <div class="tier-arrow">→ Подобрать</div>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="section">
+    <div class="container text-center">
+      <div class="cta-box reveal-up">
+        <div class="section-tag">Начало работы</div>
+        <h2>Готовы спроектировать ваш ЦОД?</h2>
+        <p class="lead" style="margin-bottom:28px;">Войдите в систему и начните создавать конфигурацию оборудования прямо сейчас.</p>
+        <div style="display:flex;gap:14px;justify-content:center;flex-wrap:wrap;">
+          <a href="/login" class="btn btn-primary btn-lg btn-glow">Войти в систему</a>
+          <a href="/configurator" class="btn btn-outline btn-lg">Обзор каталога</a>
+        </div>
+        <div style="margin-top:20px;font-size:0.78rem;color:var(--text-muted);">
+          Демо: admin@konst-adm.ru / admin123 &nbsp;|&nbsp; user@konst-adm.ru / user123
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- Footer -->
+<footer class="footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <h3>⚡ ЦОД Конфигуратор</h3>
+        <p>Платформа для подбора и расчёта оборудования центра обработки данных Администрации Константиновского района Ростовской области.</p>
+      </div>
+      <div class="footer-col">
+        <h4>Разделы</h4>
+        <a href="/configurator">Конфигуратор</a>
+        <a href="/calculator">Калькулятор</a>
+        <a href="/cabinet">Личный кабинет</a>
+        <a href="/admin">Администрирование</a>
+      </div>
+      <div class="footer-col">
+        <h4>Оборудование</h4>
+        <a href="/configurator?cat=server">Серверы</a>
+        <a href="/configurator?cat=storage">СХД</a>
+        <a href="/configurator?cat=network">Сеть</a>
+        <a href="/configurator?cat=cooling">Охлаждение</a>
+      </div>
+      <div class="footer-col">
+        <h4>Контакты</h4>
+        <a href="#">г. Константиновск</a>
+        <a href="#">ул. 25 Октября, 70</a>
+        <a href="#">admin@konst-adm.ru</a>
+        <a href="#">+7 (86393) 2-16-62</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2025 Администрация Константиновского района Ростовской области</span>
+      <span style="display:flex;gap:20px;align-items:center;flex-wrap:wrap;">
+        <a href="/terms" style="color:var(--text-muted);font-size:0.8rem;transition:color 0.2s;" onmouseover="this.style.color='#2563EB'" onmouseout="this.style.color=''">Условия использования</a>
+        <a href="/privacy" style="color:var(--text-muted);font-size:0.8rem;transition:color 0.2s;" onmouseover="this.style.color='#2563EB'" onmouseout="this.style.color=''">Политика конфиденциальности</a>
+        <span style="font-size:0.8rem;">ЦОД Конфигуратор v1.0</span>
+      </span>
+    </div>
+  </div>
+</footer>
+
+<script src="/static/js/common.js"></script>
+<script>
+(async () => {
+  const user = await loadCurrentUser();
+  updateNavAuth(user);
+})();
+
+// ── Scroll reveal ──────────────────────────────────────────────
+const revealEls = document.querySelectorAll('.reveal-up');
+const revealObs = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      e.target.classList.add('revealed');
+      revealObs.unobserve(e.target);
+    }
+  });
+}, { threshold: 0.12 });
+revealEls.forEach(el => revealObs.observe(el));
+
+// ── Animated counters ──────────────────────────────────────────
+function animateCounter(el) {
+  const target = parseFloat(el.dataset.target);
+  const suffix = el.dataset.suffix || '';
+  const dur = 1600;
+  const start = performance.now();
+  const isFloat = String(target).includes('.');
+  const update = (now) => {
+    const p = Math.min((now - start) / dur, 1);
+    const ease = 1 - Math.pow(1 - p, 3);
+    const val = target * ease;
+    el.textContent = (isFloat ? val.toFixed(1) : Math.floor(val)) + suffix;
+    if (p < 1) requestAnimationFrame(update);
+  };
+  requestAnimationFrame(update);
+}
+
+const counterObs = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      animateCounter(e.target);
+      counterObs.unobserve(e.target);
+    }
+  });
+}, { threshold: 0.5 });
+
+document.querySelectorAll('.counter-anim, .counter').forEach(el => counterObs.observe(el));
+
+// ── Hero particles ─────────────────────────────────────────────
+(function () {
+  const canvas = document.createElement('canvas');
+  const container = document.getElementById('heroParticles');
+  if (!container) return;
+  container.appendChild(canvas);
+  const ctx = canvas.getContext('2d');
+  let W, H, particles = [];
+
+  function resize() {
+    W = canvas.width = container.offsetWidth;
+    H = canvas.height = container.offsetHeight;
+  }
+
+  function mkParticle() {
+    return {
+      x: Math.random() * W,
+      y: Math.random() * H,
+      r: Math.random() * 1.5 + 0.5,
+      vx: (Math.random() - 0.5) * 0.4,
+      vy: (Math.random() - 0.5) * 0.4,
+      a: Math.random() * 0.5 + 0.15
+    };
+  }
+
+  function init() {
+    resize();
+    particles = Array.from({ length: 60 }, mkParticle);
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+    particles.forEach(p => {
+      p.x += p.vx; p.y += p.vy;
+      if (p.x < 0) p.x = W; if (p.x > W) p.x = 0;
+      if (p.y < 0) p.y = H; if (p.y > H) p.y = 0;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(148,163,184,${p.a})`;
+      ctx.fill();
+    });
+    requestAnimationFrame(draw);
+  }
+
+  window.addEventListener('resize', resize);
+  init();
+  draw();
+})();
+
+// ── Card shine on hover ────────────────────────────────────────
+document.querySelectorAll('.feature-card').forEach(card => {
+  card.addEventListener('mousemove', e => {
+    const rect = card.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    const shine = card.querySelector('.card-shine');
+    if (shine) {
+      shine.style.background = `radial-gradient(200px circle at ${x}px ${y}px, rgba(59,130,246,0.08), transparent 70%)`;
+    }
+  });
+  card.addEventListener('mouseleave', e => {
+    const shine = card.querySelector('.card-shine');
+    if (shine) shine.style.background = 'none';
+  });
+});
+</script>
+</body>
+</html>
