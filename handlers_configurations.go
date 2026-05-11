@@ -15,7 +15,9 @@ func (s *Server) handleConfigurations(w http.ResponseWriter, r *http.Request) {
 			errResp(w, "unauthorized", 401)
 			return
 		}
-		list := s.store.getConfigurations(user.ID, user.Role)
+		// Каждый пользователь (включая админа) видит только свои конфигурации.
+		// Для просмотра всех конфигураций — использовать /api/admin/configurations.
+		list := s.store.getConfigurations(user.ID)
 		if list == nil {
 			list = []*Configuration{}
 		}
@@ -41,6 +43,24 @@ func (s *Server) handleConfigurations(w http.ResponseWriter, r *http.Request) {
 		}
 		jsonResp(w, saved, 201)
 	}
+}
+
+// handleAdminConfigurations — только для администраторов, возвращает все конфигурации всех пользователей.
+func (s *Server) handleAdminConfigurations(w http.ResponseWriter, r *http.Request) {
+	user := s.getUserFromCookie(r)
+	if user == nil {
+		errResp(w, "unauthorized", 401)
+		return
+	}
+	if user.Role != "admin" {
+		errResp(w, "forbidden", 403)
+		return
+	}
+	list := s.store.getAllConfigurations()
+	if list == nil {
+		list = []*Configuration{}
+	}
+	jsonResp(w, list, 200)
 }
 
 func (s *Server) handleExport(w http.ResponseWriter, r *http.Request) {
@@ -103,6 +123,11 @@ func (s *Server) handleConfiguration(w http.ResponseWriter, r *http.Request) {
 			errResp(w, "not found", 404)
 			return
 		}
+		// Проверка владельца: только владелец или администратор может изменить конфигурацию
+		if cfg.UserID != user.ID && user.Role != "admin" {
+			errResp(w, "forbidden", 403)
+			return
+		}
 		json.NewDecoder(r.Body).Decode(cfg)
 		cfg.ID = id
 		cfg.TotalCost = s.store.calcCost(cfg.Items)
@@ -115,6 +140,16 @@ func (s *Server) handleConfiguration(w http.ResponseWriter, r *http.Request) {
 		user := s.getUserFromCookie(r)
 		if user == nil {
 			errResp(w, "unauthorized", 401)
+			return
+		}
+		cfg := s.store.getConfiguration(id)
+		if cfg == nil {
+			errResp(w, "not found", 404)
+			return
+		}
+		// Проверка владельца: только владелец или администратор может удалить конфигурацию
+		if cfg.UserID != user.ID && user.Role != "admin" {
+			errResp(w, "forbidden", 403)
 			return
 		}
 		s.store.deleteConfiguration(id)

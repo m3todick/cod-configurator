@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Личный кабинет — ЦОД</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Raleway:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/static/css/main.css">
+<style>
+.cabinet-layout { display: grid; grid-template-columns: 260px 1fr; gap: 24px; align-items: start; }
+@media (max-width: 768px) {
+  .cabinet-layout { grid-template-columns: 1fr !important; }
+  .sidebar-dark { position: static !important; top: auto; }
+  .sidebar-nav-dark { flex-direction: row; flex-wrap: wrap; gap: 6px; }
+  .sidebar-nav-dark a { padding: 7px 12px; font-size: 0.8rem; }
+}
+@media (max-width: 480px) {
+  .sidebar-nav-dark a { padding: 6px 8px; font-size: 0.75rem; }
+}
+
+/* Dark sidebar */
+.sidebar-dark {
+  background: #111827;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: var(--radius);
+  padding: 24px 20px;
+  position: sticky; top: 84px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+}
+.sidebar-avatar-dark {
+  width: 72px; height: 72px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--primary), var(--accent));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 28px; font-weight: 700; color: white;
+  margin: 0 auto 12px;
+  box-shadow: 0 0 24px rgba(59,130,246,0.35);
+}
+.sidebar-name-dark { text-align: center; font-weight: 700; font-size: 0.95rem; color: white; margin-bottom: 4px; }
+.sidebar-role-dark { text-align: center; font-size: 0.78rem; color: rgba(255,255,255,0.68); margin-bottom: 20px; }
+.sidebar-nav-dark { display: flex; flex-direction: column; gap: 4px; }
+.sidebar-nav-dark a {
+  display: flex; align-items: center; gap: 10px;
+  padding: 9px 12px; border-radius: var(--radius-sm);
+  font-size: 0.875rem; font-weight: 500; color: rgba(255,255,255,0.75);
+  transition: all var(--transition); cursor: pointer;
+}
+.sidebar-nav-dark a:hover { background: rgba(255,255,255,0.07); color: white; }
+.sidebar-nav-dark a.active { background: rgba(59,130,246,0.15); color: #60A5FA; border: 1px solid rgba(59,130,246,0.2); }
+.sidebar-nav-dark a .icon { font-size: 16px; }
+.sidebar-org-label { font-size: 0.72rem; color: rgba(255,255,255,0.62); margin-bottom: 6px; }
+.sidebar-org-val { font-size: 0.78rem; font-weight: 600; color: rgba(255,255,255,0.85); }
+.sidebar-divider { height: 1px; background: rgba(255,255,255,0.08); margin: 16px 0; }
+
+/* Config cards */
+.config-card {
+  background: white; border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 20px; margin-bottom: 12px;
+  transition: all 0.25s ease; animation: slideUp 0.35s ease both;
+}
+.config-card:hover { box-shadow: 0 8px 24px rgba(0,0,0,0.08); border-color: #CBD5E1; transform: translateY(-2px); }
+.config-card-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 10px; }
+.config-card-name { font-size: 1rem; font-weight: 700; }
+.config-card-date { font-size: 0.75rem; color: var(--text-muted); margin-top: 2px; }
+.config-card-cost { font-size: 1.1rem; font-weight: 700; color: var(--primary); background: var(--primary-pale); border-radius: var(--radius-sm); padding: 4px 10px; white-space: nowrap; }
+.config-card-meta { font-size: 0.8rem; color: var(--text-secondary); }
+.config-actions { display: flex; gap: 8px; margin-top: 14px; flex-wrap: wrap; }
+
+/* Profile card */
+.profile-card { background: white; border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow-sm); }
+.profile-card-header { padding: 20px 24px 16px; border-bottom: 1px solid var(--border-light); background: linear-gradient(135deg, var(--primary-pale), var(--accent-pale)); }
+.profile-card-body { padding: 24px; }
+
+/* Users tab */
+.users-table-wrap { background: white; border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow-sm); }
+.user-row { display: flex; align-items: center; gap: 14px; padding: 14px 20px; border-bottom: 1px solid var(--border-light); transition: background var(--transition); }
+.user-row:last-child { border-bottom: none; }
+.user-row:hover { background: var(--surface-alt); }
+.user-avatar-sm { width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg,var(--primary),var(--accent)); display:flex;align-items:center;justify-content:center; color:white;font-weight:700;font-size:1rem;flex-shrink:0; }
+.user-info { flex: 1; min-width: 0; }
+.user-info-name { font-weight: 700; font-size: 0.9rem; }
+.user-info-email { font-size: 0.78rem; color: var(--text-muted); }
+.user-role-badge { padding: 3px 10px; border-radius: 100px; font-size: 0.72rem; font-weight: 700; }
+.role-admin { background: #EFF6FF; color: var(--primary); }
+.role-user { background: #F0FDF4; color: #15803D; }
+.users-search { display: flex; gap: 12px; margin-bottom: 16px; align-items: center; }
+.users-search .form-control { max-width: 320px; }
+
+.section-toolbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; flex-wrap: wrap; gap: 12px; }
+.section-toolbar h2 { font-family: var(--font-display); font-size: 1.4rem; }
+
+/* Profile edit toggle */
+.profile-field { position: relative; }
+.profile-field input[readonly] { background: var(--surface-alt); color: var(--text-secondary); }
+.profile-field input:not([readonly]) { background: white; color: var(--text); border-color: var(--primary-light); }
+</style>
+</head>
+<body>
+<nav class="navbar">
+  <a href="/" class="navbar-brand">
+    <div class="logo-icon">⚡</div>
+    <div>ЦОД Конфигуратор<span class="sub">Администрация Константиновского района</span></div>
+  </a>
+  <div class="navbar-nav">
+    <a href="/">Главная</a>
+    <a href="/configurator">Конфигуратор</a>
+    <a href="/calculator">Калькулятор</a>
+    <a href="/cabinet" class="active" id="nav-cabinet">Кабинет</a>
+    <a href="/admin" id="nav-admin" style="display:none">Администрирование</a>
+  </div>
+  <div class="navbar-actions">
+    <button class="btn btn-outline-light btn-sm" onclick="logout()">Выйти</button>
+  </div>
+  <button class="nav-toggle" aria-label="Меню" onclick="toggleNav()">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<main class="page">
+  <div class="page-header">
+    <div class="container">
+      <div class="breadcrumb"><a href="/">Главная</a><span class="sep">›</span> Личный кабинет</div>
+      <h1>👤 Личный кабинет</h1>
+      <p>Управление конфигурациями и настройки профиля</p>
+    </div>
+  </div>
+
+  <div class="container" style="padding-top:28px;padding-bottom:48px;">
+    <div class="cabinet-layout" id="cabinet-main" style="display:none;">
+
+      <!-- Sidebar -->
+      <div>
+        <div class="sidebar-dark">
+          <div class="sidebar-avatar-dark" id="user-avatar">А</div>
+          <div class="sidebar-name-dark" id="user-name">Загрузка...</div>
+          <div class="sidebar-role-dark" id="user-role"></div>
+          <div class="sidebar-nav-dark" id="sidebar-nav">
+            <a onclick="showSection('configs',this)" class="active">
+              <span class="icon">⚙️</span> Мои конфигурации
+            </a>
+            <a onclick="showSection('profile',this)">
+              <span class="icon">👤</span> Профиль
+            </a>
+            <a id="nav-users-tab" onclick="showSection('users',this)" style="display:none;">
+              <span class="icon">👥</span> Пользователи
+            </a>
+            <a href="/configurator"><span class="icon">➕</span> Новая конфигурация</a>
+            <a href="/calculator"><span class="icon">🧮</span> Калькулятор</a>
+          </div>
+          <div class="sidebar-divider"></div>
+          <div class="sidebar-org-label">Организация</div>
+          <div class="sidebar-org-val" id="user-org">—</div>
+          <div class="sidebar-divider"></div>
+          <div style="display:flex;flex-direction:column;gap:4px;">
+            <a href="/terms" style="display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:6px;font-size:0.78rem;font-weight:500;color:rgba(255,255,255,0.5);transition:all 0.2s;text-decoration:none;" onmouseover="this.style.background='rgba(255,255,255,0.06)';this.style.color='rgba(255,255,255,0.85)'" onmouseout="this.style.background='';this.style.color='rgba(255,255,255,0.5)'">
+              <span>📄</span> Условия использования
+            </a>
+            <a href="/privacy" style="display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:6px;font-size:0.78rem;font-weight:500;color:rgba(255,255,255,0.5);transition:all 0.2s;text-decoration:none;" onmouseover="this.style.background='rgba(255,255,255,0.06)';this.style.color='rgba(255,255,255,0.85)'" onmouseout="this.style.background='';this.style.color='rgba(255,255,255,0.5)'">
+              <span>🔒</span> Политика конфиденциальности
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Content -->
+      <div>
+        <!-- ── Configs section ── -->
+        <div id="section-configs">
+          <div class="section-toolbar">
+            <h2>Мои конфигурации</h2>
+            <div style="display:flex;gap:10px;">
+              <label class="btn btn-outline btn-sm" style="cursor:pointer;">
+                📥 Импорт
+                <input type="file" accept=".json" style="display:none" onchange="importConfig(this)">
+              </label>
+              <a href="/configurator" class="btn btn-primary btn-sm">➕ Создать</a>
+            </div>
+          </div>
+          <div id="configs-loading" class="loading-state"><div class="spinner"></div><p style="margin-top:10px;">Загрузка...</p></div>
+          <div id="configs-list"></div>
+          <div id="configs-empty" style="display:none;" class="loading-state">
+            <div style="font-size:48px;margin-bottom:12px;">📂</div>
+            <p>У вас пока нет конфигураций</p>
+            <a href="/configurator" class="btn btn-primary" style="margin-top:12px;">Создать первую конфигурацию</a>
+          </div>
+        </div>
+
+        <!-- ── Profile section ── -->
+        <div id="section-profile" style="display:none;">
+          <div class="section-toolbar">
+            <h2>Мой профиль</h2>
+            <div id="profile-actions">
+              <button class="btn btn-primary btn-sm" id="btn-edit-profile" onclick="toggleEditProfile()">✏️ Редактировать</button>
+            </div>
+          </div>
+          <div class="profile-card">
+            <div class="profile-card-header">
+              <div style="display:flex;align-items:center;gap:14px;">
+                <div style="width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,var(--primary),var(--accent));display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:700;color:white;" id="profile-avatar-big">А</div>
+                <div>
+                  <div style="font-weight:700;font-size:1rem;" id="profile-name-big">—</div>
+                  <div style="font-size:0.8rem;color:var(--text-secondary);" id="profile-role-big">—</div>
+                </div>
+              </div>
+            </div>
+            <div class="profile-card-body">
+              <div class="grid-2" style="margin-bottom:20px;">
+                <div class="form-group profile-field"><label class="form-label">Имя</label><input class="form-control" id="p-name" readonly></div>
+                <div class="form-group profile-field"><label class="form-label">Email</label><input class="form-control" id="p-email" readonly></div>
+                <div class="form-group profile-field"><label class="form-label">Роль</label><input class="form-control" id="p-role" readonly></div>
+                <div class="form-group profile-field"><label class="form-label">Организация</label><input class="form-control" id="p-org" readonly></div>
+              </div>
+
+              <!-- Password change block (hidden by default) -->
+              <div id="pwd-section" style="display:none;border-top:1px solid var(--border-light);padding-top:20px;margin-top:4px;">
+                <div style="font-size:0.85rem;font-weight:700;margin-bottom:14px;color:var(--text);">Смена пароля</div>
+                <div class="grid-2">
+                  <div class="form-group"><label class="form-label">Текущий пароль</label><input type="password" class="form-control" id="p-old-pwd" placeholder="Введите текущий пароль"></div>
+                  <div class="form-group"><label class="form-label">Новый пароль</label><input type="password" class="form-control" id="p-new-pwd" placeholder="Минимум 6 символов"></div>
+                </div>
+              </div>
+
+              <!-- Edit buttons (hidden by default) -->
+              <div id="profile-edit-btns" style="display:none;margin-top:4px;display:none;gap:10px;flex-wrap:wrap;">
+                <button class="btn btn-primary" onclick="saveProfile()">💾 Сохранить изменения</button>
+                <button class="btn btn-ghost" onclick="cancelEditProfile()">Отмена</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── Users section (admin only) ── -->
+        <div id="section-users" style="display:none;">
+          <div class="section-toolbar">
+            <h2>Пользователи платформы</h2>
+            <div style="font-size:0.82rem;color:var(--text-secondary);" id="users-count"></div>
+          </div>
+          <div class="users-search">
+            <input class="form-control" id="users-search-input" placeholder="🔍 Поиск по имени или email..." oninput="filterUsers()" style="max-width:360px;">
+          </div>
+          <div id="users-loading" class="loading-state"><div class="spinner"></div><p style="margin-top:10px;">Загрузка...</p></div>
+          <div class="users-table-wrap" id="users-list-wrap" style="display:none;">
+            <div id="users-list"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="auth-required" style="display:none;" class="loading-state">
+      <div style="font-size:48px;margin-bottom:12px;">🔒</div>
+      <p style="margin-bottom:16px;">Для доступа к кабинету необходимо авторизоваться</p>
+      <a href="/login" class="btn btn-primary">Войти в систему</a>
+    </div>
+  </div>
+</main>
+
+<!-- Config detail modal -->
+<!-- Role change password modal -->
+<div class="modal-overlay" id="role-pwd-modal" onclick="if(event.target===this)closeRolePwdModal()">
+  <div class="modal" style="max-width:440px;">
+    <div class="modal-header">
+      <h3 id="role-pwd-title">Смена роли</h3>
+      <button class="btn btn-ghost btn-icon" onclick="closeRolePwdModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div style="display:flex;align-items:center;gap:12px;background:#FFF7ED;border:1px solid #FED7AA;border-radius:8px;padding:12px 14px;margin-bottom:18px;">
+        <span style="font-size:22px;">⚠️</span>
+        <p id="role-pwd-desc" style="margin:0;font-size:0.875rem;color:#92400E;line-height:1.5;"></p>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Специальный пароль</label>
+        <input type="password" class="form-control" id="role-pwd-input" placeholder="Введите пароль для смены роли" onkeydown="if(event.key==='Enter')confirmRoleChange()">
+      </div>
+      <div id="role-pwd-error" style="display:none;background:#FEE2E2;color:#DC2626;padding:8px 12px;border-radius:6px;font-size:0.82rem;margin-top:8px;"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeRolePwdModal()">Отмена</button>
+      <button class="btn btn-primary" id="role-pwd-confirm-btn" onclick="confirmRoleChange()">✅ Подтвердить</button>
+    </div>
+  </div>
+</div>
+
+<!-- Delete user confirm modal -->
+<div class="modal-overlay" id="del-user-modal" onclick="if(event.target===this)closeModal('del-user-modal')">
+  <div class="modal" style="max-width:420px;">
+    <div class="modal-header">
+      <h3>Удалить пользователя</h3>
+      <button class="btn btn-ghost btn-icon" onclick="closeModal('del-user-modal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <p style="color:var(--text-secondary);margin:0;">Вы действительно хотите удалить пользователя <strong id="del-user-name"></strong>? Все его конфигурации будут удалены безвозвратно.</p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('del-user-modal')">Отмена</button>
+      <button class="btn btn-danger" id="del-user-confirm">🗑 Удалить</button>
+    </div>
+  </div>
+</div>
+
+<!-- Delete configuration confirm modal -->
+<div class="modal-overlay" id="del-cfg-modal" onclick="if(event.target===this)closeModal('del-cfg-modal')">
+  <div class="modal" style="max-width:420px;">
+    <div class="modal-header">
+      <h3>Подтвердите удаление</h3>
+      <button class="btn btn-ghost btn-icon" onclick="closeModal('del-cfg-modal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <p style="color:var(--text-secondary);margin:0;">Вы действительно хотите удалить конфигурацию <strong id="del-cfg-name"></strong>? Это действие нельзя отменить.</p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('del-cfg-modal')">Отмена</button>
+      <button class="btn btn-danger" id="del-cfg-confirm">🗑 Удалить</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="cfg-modal" onclick="if(event.target===this)closeModal('cfg-modal')">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="cfg-modal-title">Детали конфигурации</h3>
+      <button class="btn btn-ghost btn-icon" onclick="closeModal('cfg-modal')">✕</button>
+    </div>
+    <div class="modal-body" id="cfg-modal-body"></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('cfg-modal')">Закрыть</button>
+      <button class="btn btn-outline" id="cfg-export-btn">📤 Экспорт JSON</button>
+    </div>
+  </div>
+</div>
+
+<!-- Edit user modal (admin) -->
+<div class="modal-overlay" id="user-modal" onclick="if(event.target===this)closeModal('user-modal')">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>✏️ Редактировать пользователя</h3>
+      <button class="btn btn-ghost btn-icon" onclick="closeModal('user-modal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="edit-user-id">
+      <div class="grid-2">
+        <div class="form-group"><label class="form-label">Имя</label><input class="form-control" id="eu-name" placeholder="Полное имя"></div>
+        <div class="form-group"><label class="form-label">Email</label><input class="form-control" id="eu-email" placeholder="email@domain.ru" type="email"></div>
+      </div>
+      <div class="form-group"><label class="form-label">Организация</label><input class="form-control" id="eu-org" placeholder="Название организации"></div>
+      <input type="hidden" id="eu-role">
+      <input type="hidden" id="eu-original-role">
+      <div class="form-group" style="margin-top:4px;">
+        <label class="form-label">Новый пароль</label>
+        <input type="password" class="form-control" id="eu-password" placeholder="Оставьте пустым, чтобы не менять">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('user-modal')">Отмена</button>
+      <button class="btn btn-primary" onclick="saveUser()">💾 Сохранить</button>
+    </div>
+  </div>
+</div>
+
+<script src="/static/js/common.js"></script>
+<script>
+let user = null;
+let allComponents = [];
+let configs = [];
+let allUsers = [];
+let profileEditMode = false;
+
+async function init() {
+  user = await loadCurrentUser();
+  if (!user) {
+    document.getElementById('auth-required').style.display = 'block';
+    return;
+  }
+  document.getElementById('cabinet-main').style.display = 'grid';
+  updateNavAuth(user);
+  if (user.role === 'admin') {
+    document.getElementById('nav-admin').style.display = '';
+    document.getElementById('nav-users-tab').style.display = '';
+  }
+
+  const initials = user.name[0].toUpperCase();
+  document.getElementById('user-avatar').textContent = initials;
+  document.getElementById('user-name').textContent = user.name;
+  document.getElementById('user-role').textContent = user.role === 'admin' ? '👑 Администратор' : '👤 Пользователь';
+  document.getElementById('user-org').textContent = user.organization || '—';
+
+  fillProfileFields(user);
+  allComponents = await http.get('/api/components').catch(() => []);
+  await loadConfigs();
+}
+
+function fillProfileFields(u) {
+  const initials = u.name[0].toUpperCase();
+  document.getElementById('profile-avatar-big').textContent = initials;
+  document.getElementById('profile-name-big').textContent = u.name;
+  document.getElementById('profile-role-big').textContent = u.role === 'admin' ? 'Администратор' : 'Пользователь';
+  document.getElementById('p-name').value = u.name;
+  document.getElementById('p-email').value = u.email;
+  document.getElementById('p-role').value = u.role === 'admin' ? 'Администратор' : 'Пользователь';
+  document.getElementById('p-org').value = u.organization || '';
+}
+
+// ── Profile edit ──────────────────────────────────────────────────
+function toggleEditProfile() {
+  profileEditMode = true;
+  ['p-name','p-email','p-org'].forEach(id => {
+    document.getElementById(id).removeAttribute('readonly');
+  });
+  document.getElementById('pwd-section').style.display = 'block';
+  document.getElementById('profile-edit-btns').style.display = 'flex';
+  document.getElementById('btn-edit-profile').style.display = 'none';
+}
+
+function cancelEditProfile() {
+  profileEditMode = false;
+  ['p-name','p-email','p-org'].forEach(id => {
+    document.getElementById(id).setAttribute('readonly', '');
+  });
+  document.getElementById('pwd-section').style.display = 'none';
+  document.getElementById('profile-edit-btns').style.display = 'none';
+  document.getElementById('btn-edit-profile').style.display = '';
+  document.getElementById('p-old-pwd').value = '';
+  document.getElementById('p-new-pwd').value = '';
+  fillProfileFields(user);
+}
+
+async function saveProfile() {
+  const payload = {
+    name: document.getElementById('p-name').value.trim(),
+    email: document.getElementById('p-email').value.trim(),
+    organization: document.getElementById('p-org').value.trim()
+  };
+  const oldPwd = document.getElementById('p-old-pwd').value;
+  const newPwd = document.getElementById('p-new-pwd').value;
+  if (newPwd) {
+    if (!oldPwd) { toast.error('Введите текущий пароль'); return; }
+    if (newPwd.length < 6) { toast.error('Новый пароль должен содержать минимум 6 символов'); return; }
+    payload.old_password = oldPwd;
+    payload.new_password = newPwd;
+  }
+  try {
+    const updated = await http.put('/api/profile', payload);
+    user = updated;
+    fillProfileFields(user);
+    document.getElementById('user-name').textContent = user.name;
+    document.getElementById('user-org').textContent = user.organization || '—';
+    document.getElementById('user-avatar').textContent = user.name[0].toUpperCase();
+    cancelEditProfile();
+    toast.success('Профиль обновлён');
+  } catch(e) { toast.error(e.message); }
+}
+
+// ── Configs ───────────────────────────────────────────────────────
+async function loadConfigs() {
+  document.getElementById('configs-loading').style.display = 'block';
+  document.getElementById('configs-list').innerHTML = '';
+  document.getElementById('configs-empty').style.display = 'none';
+  try {
+    configs = await http.get('/api/configurations');
+    renderConfigs();
+  } catch(e) { toast.error(e.message); }
+  document.getElementById('configs-loading').style.display = 'none';
+}
+
+function renderConfigs() {
+  if (!configs || !configs.length) {
+    document.getElementById('configs-empty').style.display = 'block';
+    return;
+  }
+  document.getElementById('configs-list').innerHTML = configs.map((cfg, idx) => {
+    const itemCount = cfg.items ? cfg.items.reduce((s,i)=>s+i.quantity,0) : 0;
+    return `<div class="config-card" style="animation-delay:${idx*0.06}s">
+      <div class="config-card-header">
+        <div>
+          <div class="config-card-name">${cfg.name || 'Конфигурация'}</div>
+          <div class="config-card-date">📅 ${fmt.dateTime(cfg.created_at)}</div>
+        </div>
+        <div class="config-card-cost">${fmt.money(cfg.total_cost)}</div>
+      </div>
+      <div class="config-card-meta">📦 ${itemCount} единиц оборудования</div>
+      ${cfg.description ? `<div style="font-size:0.78rem;color:var(--text-muted);margin-top:4px;">${cfg.description}</div>` : ''}
+      <div class="config-actions">
+        <button class="btn btn-outline btn-sm" onclick="viewConfig('${cfg.id}')">🔍 Подробнее</button>
+        <button class="btn btn-outline btn-sm" onclick="exportConfig('${cfg.id}')">📤 Экспорт</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteConfig('${cfg.id}')">🗑 Удалить</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── Users (admin) ─────────────────────────────────────────────────
+async function loadUsers() {
+  document.getElementById('users-loading').style.display = 'block';
+  document.getElementById('users-list-wrap').style.display = 'none';
+  try {
+    allUsers = await http.get('/api/users');
+    document.getElementById('users-count').textContent = `Всего: ${allUsers.length}`;
+    renderUsers(allUsers);
+  } catch(e) { toast.error(e.message); }
+  document.getElementById('users-loading').style.display = 'none';
+  document.getElementById('users-list-wrap').style.display = 'block';
+}
+
+function renderUsers(list) {
+  if (!list.length) {
+    document.getElementById('users-list').innerHTML = '<div class="loading-state" style="padding:32px;"><p>Пользователи не найдены</p></div>';
+    return;
+  }
+  document.getElementById('users-list').innerHTML = list.map(u => `
+    <div class="user-row">
+      <div class="user-avatar-sm">${u.name[0].toUpperCase()}</div>
+      <div class="user-info">
+        <div class="user-info-name">${u.name}</div>
+        <div class="user-info-email">${u.email}</div>
+        ${u.organization ? `<div style="font-size:0.72rem;color:var(--text-muted);margin-top:1px;">${u.organization}</div>` : ''}
+      </div>
+      <span class="user-role-badge ${u.role === 'admin' ? 'role-admin' : 'role-user'}">
+        ${u.role === 'admin' ? '👑 Админ' : '👤 Польз.'}
+      </span>
+      <button class="btn btn-outline btn-sm" onclick="toggleUserRole('${u.id}')" title="Сменить роль">
+        ${u.role === 'admin' ? '⬇ В пользователи' : '⬆ В админы'}
+      </button>
+      <button class="btn btn-outline btn-sm" onclick="openEditUser('${u.id}')">✏️ Изменить</button>
+      <button class="btn btn-danger btn-sm" onclick="confirmDeleteUser('${u.id}')">🗑 Удалить</button>
+    </div>`).join('');
+}
+
+function filterUsers() {
+  const q = document.getElementById('users-search-input').value.toLowerCase();
+  const filtered = allUsers.filter(u =>
+    u.name.toLowerCase().includes(q) || u.email.toLowerCase().includes(q) || (u.organization||'').toLowerCase().includes(q)
+  );
+  document.getElementById('users-count').textContent = `Найдено: ${filtered.length} из ${allUsers.length}`;
+  renderUsers(filtered);
+}
+
+let _pendingRoleChange = null;
+
+function toggleUserRole(id) {
+  const u = allUsers.find(x => x.id === id);
+  if (!u) return;
+  const newRole = u.role === 'admin' ? 'user' : 'admin';
+  _pendingRoleChange = { id, newRole };
+
+  document.getElementById('role-pwd-title').textContent =
+    newRole === 'admin' ? '⬆ Повышение до администратора' : '⬇ Понижение до пользователя';
+  document.getElementById('role-pwd-desc').textContent =
+    newRole === 'admin'
+      ? `Вы собираетесь назначить «${u.name}» администратором. Это действие расширит его права доступа. Введите специальный пароль для подтверждения.`
+      : `Вы собираетесь понизить «${u.name}» до обычного пользователя. Введите специальный пароль для подтверждения.`;
+  document.getElementById('role-pwd-input').value = '';
+  document.getElementById('role-pwd-error').style.display = 'none';
+  openModal('role-pwd-modal');
+  setTimeout(() => document.getElementById('role-pwd-input').focus(), 120);
+}
+
+async function confirmRoleChange() {
+  if (!_pendingRoleChange) return;
+  const pwd = document.getElementById('role-pwd-input').value;
+  const errEl = document.getElementById('role-pwd-error');
+  const btn = document.getElementById('role-pwd-confirm-btn');
+  if (!pwd) {
+    errEl.textContent = 'Введите пароль';
+    errEl.style.display = 'block';
+    return;
+  }
+  btn.disabled = true;
+  btn.textContent = 'Проверка...';
+  errEl.style.display = 'none';
+  try {
+    const { id, newRole, basePayload, onSuccess } = _pendingRoleChange;
+    const payload = Object.assign({}, basePayload || {}, { role: newRole, role_password: pwd });
+    const updated = await http.put(`/api/users/${id}`, payload);
+    const idx = allUsers.findIndex(x => x.id === id);
+    if (idx !== -1) allUsers[idx] = updated;
+    filterUsers();
+    if (typeof onSuccess === 'function') onSuccess(updated);
+    closeRolePwdModal();
+    toast.success(newRole === 'admin' ? 'Пользователь назначен администратором' : 'Пользователь понижен до обычного');
+  } catch(e) {
+    errEl.textContent = e.message || 'Неверный пароль';
+    errEl.style.display = 'block';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '✅ Подтвердить';
+  }
+}
+
+function closeRolePwdModal() {
+  _pendingRoleChange = null;
+  closeModal('role-pwd-modal');
+}
+
+function confirmDeleteUser(id) {
+  const u = allUsers.find(x => x.id === id);
+  if (!u) return;
+  document.getElementById('del-user-name').textContent = u.name + ' (' + u.email + ')';
+  document.getElementById('del-user-confirm').onclick = async () => {
+    try {
+      await http.del(`/api/users/${id}`);
+      allUsers = allUsers.filter(x => x.id !== id);
+      filterUsers();
+      closeModal('del-user-modal');
+      toast.success('Пользователь удалён');
+    } catch(e) { toast.error(e.message); }
+  };
+  openModal('del-user-modal');
+}
+
+function openEditUser(id) {
+  const u = allUsers.find(x => x.id === id);
+  if (!u) return;
+  document.getElementById('edit-user-id').value = u.id;
+  document.getElementById('eu-name').value = u.name;
+  document.getElementById('eu-email').value = u.email;
+  document.getElementById('eu-org').value = u.organization || '';
+  document.getElementById('eu-role').value = u.role;
+  document.getElementById('eu-original-role').value = u.role;
+  document.getElementById('eu-password').value = '';
+  openModal('user-modal');
+}
+
+async function saveUser() {
+  const id = document.getElementById('edit-user-id').value;
+  const currentRole = document.getElementById('eu-role').value;
+
+  const payload = {
+    name: document.getElementById('eu-name').value.trim(),
+    email: document.getElementById('eu-email').value.trim(),
+    organization: document.getElementById('eu-org').value.trim(),
+    role: currentRole,
+    password: document.getElementById('eu-password').value || undefined
+  };
+  if (!payload.password) delete payload.password;
+
+  try {
+    const updated = await http.put(`/api/users/${id}`, payload);
+    const idx = allUsers.findIndex(x => x.id === id);
+    if (idx !== -1) allUsers[idx] = updated;
+    filterUsers();
+    closeModal('user-modal');
+    toast.success('Данные пользователя обновлены');
+  } catch(e) { toast.error(e.message); }
+}
+
+// ── Navigation ────────────────────────────────────────────────────
+function showSection(name, link) {
+  document.querySelectorAll('[id^=section-]').forEach(el => el.style.display = 'none');
+  document.getElementById(`section-${name}`).style.display = 'block';
+  document.querySelectorAll('.sidebar-nav-dark a').forEach(a => a.classList.remove('active'));
+  if (link) link.classList.add('active');
+  if (name === 'users' && allUsers.length === 0) loadUsers();
+  return false;
+}
+
+function viewConfig(id) {
+  const cfg = configs.find(c => c.id === id);
+  if (!cfg) return;
+  document.getElementById('cfg-modal-title').textContent = cfg.name || 'Конфигурация';
+  document.getElementById('cfg-export-btn').onclick = () => exportConfig(id);
+  const items = cfg.items || [];
+  const rows = items.map(item => {
+    const comp = allComponents.find(c => c.id === item.component_id);
+    const name = comp ? comp.name : item.component_id;
+    const price = comp ? fmt.money(comp.price * item.quantity) : '—';
+    return `<tr>
+      <td>${name}</td>
+      <td style="text-align:center;">${item.quantity}</td>
+      <td style="text-align:right;font-weight:700;color:var(--primary);">${price}</td>
+    </tr>`;
+  }).join('');
+  document.getElementById('cfg-modal-body').innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;">
+      <div style="background:var(--surface-alt);border-radius:8px;padding:12px;">
+        <div style="font-size:0.72rem;color:var(--text-muted);">Создана</div>
+        <div style="font-size:0.85rem;font-weight:600;">${fmt.dateTime(cfg.created_at)}</div>
+      </div>
+      <div style="background:var(--primary-pale);border-radius:8px;padding:12px;">
+        <div style="font-size:0.72rem;color:var(--primary);">Итоговая стоимость</div>
+        <div style="font-size:1rem;font-weight:700;color:var(--primary);">${fmt.money(cfg.total_cost)}</div>
+      </div>
+    </div>
+    <table style="width:100%;border-collapse:collapse;font-size:0.82rem;">
+      <thead><tr style="background:var(--surface-alt);">
+        <th style="text-align:left;padding:8px 10px;border-bottom:2px solid var(--border);">Оборудование</th>
+        <th style="text-align:center;padding:8px 10px;border-bottom:2px solid var(--border);">Кол-во</th>
+        <th style="text-align:right;padding:8px 10px;border-bottom:2px solid var(--border);">Стоимость</th>
+      </tr></thead>
+      <tbody>${rows}</tbody>
+      <tfoot><tr>
+        <td colspan="2" style="padding:10px;font-weight:700;border-top:2px solid var(--primary-light);">Итого:</td>
+        <td style="text-align:right;padding:10px;font-weight:800;font-size:1rem;color:var(--primary);border-top:2px solid var(--primary-light);">${fmt.money(cfg.total_cost)}</td>
+      </tr></tfoot>
+    </table>`;
+  openModal('cfg-modal');
+}
+
+function deleteConfig(id) {
+  const cfg = configs.find(c => c.id === id);
+  document.getElementById('del-cfg-name').textContent = cfg ? (cfg.name || 'эту конфигурацию') : 'эту конфигурацию';
+  document.getElementById('del-cfg-confirm').onclick = async () => {
+    try {
+      await http.del(`/api/configurations/${id}`);
+      configs = configs.filter(c => c.id !== id);
+      renderConfigs();
+      closeModal('del-cfg-modal');
+      toast.success('Конфигурация удалена');
+    } catch(e) { toast.error(e.message); }
+  };
+  openModal('del-cfg-modal');
+}
+
+async function exportConfig(id) {
+  window.open(`/api/configurations/export/${id}`, '_blank');
+  toast.info('Скачивание...');
+}
+
+async function importConfig(input) {
+  const file = input.files[0]; if (!file) return;
+  try {
+    const text = await file.text();
+    const data = JSON.parse(text);
+    await http.post('/api/configurations/import', data);
+    toast.success('Конфигурация импортирована!');
+    await loadConfigs();
+  } catch(e) { toast.error('Ошибка импорта'); }
+  input.value = '';
+}
+
+async function logout() {
+  await http.post('/api/auth/logout', {});
+  location.href = '/';
+}
+
+init();
+</script>
+</body>
+</html>

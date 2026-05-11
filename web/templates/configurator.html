@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Конфигуратор — ЦОД</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Raleway:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/static/css/main.css">
+<style>
+.configurator-layout { display: grid; grid-template-columns: 1fr 340px; gap: 24px; align-items: start; }
+@media (max-width: 768px) {
+  .configurator-layout { grid-template-columns: 1fr !important; }
+  .panel-dark { position: static !important; top: auto; order: -1; }
+}
+@media (max-width: 480px) {
+  .components-grid { grid-template-columns: 1fr !important; }
+}
+.panel-dark {
+  background: #111827; border: 1px solid rgba(255,255,255,0.08);
+  border-radius: var(--radius); padding: 20px;
+  position: sticky; top: 84px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+}
+.panel-dark .cart-title { color: white; }
+.panel-dark .cart-item-name { color: rgba(255,255,255,0.85); }
+.panel-dark .cart-item-price { color: #60A5FA; }
+.panel-dark .cart-total .label { color: rgba(255,255,255,0.7); }
+.panel-dark .cart-total .amount { color: #60A5FA; }
+.panel-dark .cart-total { border-color: rgba(255,255,255,0.1); }
+.panel-dark .cart-empty { color: rgba(255,255,255,0.62); }
+.panel-dark .cart-item { border-color: rgba(255,255,255,0.07); }
+.panel-dark .qty-btn {
+  background: rgba(255,255,255,0.07); border-color: rgba(255,255,255,0.12);
+  color: rgba(255,255,255,0.7);
+}
+.panel-dark .qty-btn:hover { background: var(--primary); border-color: var(--primary); color: white; }
+.panel-dark .qty-val { color: white; }
+.panel-dark .form-control {
+  background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.12);
+  color: white;
+}
+.panel-dark .form-control::placeholder { color: rgba(255,255,255,0.5); }
+.panel-dark #cart-count { background: var(--primary); }
+.panel-dark .btn-outline {
+  border-color: rgba(255,255,255,0.2); color: rgba(255,255,255,0.7);
+  background: transparent;
+}
+.panel-dark .btn-outline:hover { background: rgba(255,255,255,0.08); color: white; }
+.panel-dark .btn-ghost { color: rgba(255,255,255,0.5); }
+.panel-dark .btn-ghost:hover { background: rgba(255,255,255,0.06); color: white; }
+
+.component-card {
+  background: white; border: 1.5px solid var(--border);
+  border-radius: var(--radius); padding: 16px; cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.4,0,0.2,1); position: relative;
+}
+.component-card:hover {
+  border-color: var(--primary-light);
+  box-shadow: 0 8px 24px rgba(30,64,175,0.1);
+  transform: translateY(-3px);
+}
+.component-card.selected {
+  border-color: var(--primary);
+  background: var(--primary-pale);
+  box-shadow: 0 0 0 3px rgba(59,130,246,0.15);
+}
+
+.search-row {
+  display: flex; gap: 12px; align-items: center; margin-bottom: 20px; flex-wrap: wrap;
+}
+.search-wrap {
+  flex: 1; min-width: 240px; position: relative;
+}
+.search-wrap .search-icon {
+  position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
+  font-size: 14px; pointer-events: none; color: var(--text-muted);
+}
+.search-wrap .form-control { padding-left: 36px; }
+
+.hint-box {
+  text-align: center; padding: 14px; font-size: 0.75rem;
+  color: rgba(255,255,255,0.65); margin-top: 12px;
+}
+</style>
+</head>
+<body>
+<nav class="navbar">
+  <a href="/" class="navbar-brand">
+    <div class="logo-icon">⚡</div>
+    <div>ЦОД Конфигуратор<span class="sub">Администрация Константиновского района</span></div>
+  </a>
+  <div class="navbar-nav">
+    <a href="/">Главная</a>
+    <a href="/configurator" class="active">Конфигуратор</a>
+    <a href="/calculator">Калькулятор</a>
+    <a href="/cabinet" id="nav-cabinet" style="display:none">Кабинет</a>
+    <a href="/admin" id="nav-admin" style="display:none">Администрирование</a>
+  </div>
+  <div class="navbar-actions">
+    <a href="/login" class="btn btn-primary" id="nav-login">Войти</a>
+  </div>
+  <button class="nav-toggle" aria-label="Меню" onclick="toggleNav()">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<main class="page">
+  <div class="page-header">
+    <div class="container">
+      <div class="breadcrumb">
+        <a href="/">Главная</a><span class="sep">›</span> Конфигуратор
+      </div>
+      <h1>⚙️ Конфигуратор ЦОД</h1>
+      <p>Выберите оборудование для вашего центра обработки данных</p>
+    </div>
+  </div>
+
+  <div class="container" style="padding-top:28px;padding-bottom:48px;">
+    <div class="search-row">
+      <div class="search-wrap">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="search" class="form-control" placeholder="Поиск по названию или бренду...">
+      </div>
+    </div>
+
+    <div class="category-tabs" id="category-tabs">
+      <button class="category-tab active" data-cat="">🗂 Все</button>
+      <button class="category-tab" data-cat="server">🖥 Серверы</button>
+      <button class="category-tab" data-cat="storage">💾 Хранилища</button>
+      <button class="category-tab" data-cat="network">🌐 Сеть</button>
+      <button class="category-tab" data-cat="cooling">❄️ Охлаждение</button>
+      <button class="category-tab" data-cat="power">⚡ Питание</button>
+      <button class="category-tab" data-cat="security">🔒 Безопасность</button>
+    </div>
+
+    <div class="configurator-layout">
+      <div>
+        <div id="components-grid" class="components-grid"></div>
+      </div>
+
+      <!-- Dark cart panel -->
+      <div>
+        <div class="panel-dark">
+          <div class="cart-title">
+            🛒 Ваша конфигурация
+            <span id="cart-count" style="border-radius:100px;padding:1px 8px;font-size:0.72rem;">0</span>
+          </div>
+
+          <div style="margin: 12px 0;">
+            <input type="text" id="cart-name" class="form-control" placeholder="Название конфигурации...">
+          </div>
+
+          <div class="cart-items" id="cart-items">
+            <div class="cart-empty">
+              <svg width="40" height="40" viewBox="0 0 40 40" fill="none" style="margin:0 auto 8px;opacity:0.3"><rect x="8" y="12" width="24" height="20" rx="3" stroke="white" stroke-width="2"/><path d="M14 12V10a6 6 0 0112 0v2" stroke="white" stroke-width="2"/></svg>
+              Добавьте оборудование<br>из каталога
+            </div>
+          </div>
+
+          <div class="cart-total">
+            <span class="label">Итого:</span>
+            <span class="amount" id="cart-total">0 ₽</span>
+          </div>
+
+          <div style="display:flex;flex-direction:column;gap:8px;">
+            <button class="btn btn-success w-100" id="save-btn" onclick="saveConfig()">💾 Сохранить конфигурацию</button>
+            <button class="btn btn-outline w-100" onclick="clearCart()">🗑 Очистить</button>
+            <label class="btn btn-ghost w-100" style="text-align:center;cursor:pointer;">
+              📥 Импортировать JSON
+              <input type="file" id="import-file" accept=".json" style="display:none" onchange="importConfig(this)">
+            </label>
+          </div>
+        </div>
+        <div class="hint-box">Нажмите на компонент для просмотра характеристик</div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- Component detail modal -->
+<div class="modal-overlay" id="detail-modal" onclick="if(event.target===this)closeModal('detail-modal')">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="detail-name">Характеристики</h3>
+      <button class="btn btn-ghost btn-icon" onclick="closeModal('detail-modal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div style="display:flex;gap:20px;align-items:flex-start;margin-bottom:20px;">
+        <img id="detail-img" src="" alt="" style="width:100px;height:80px;object-fit:contain;flex-shrink:0;border-radius:8px;background:var(--surface-alt);padding:8px;">
+        <div>
+          <div id="detail-brand" style="font-size:0.8rem;color:var(--text-muted);margin-bottom:4px;"></div>
+          <div id="detail-desc" style="font-size:0.875rem;color:var(--text-secondary);"></div>
+          <div id="detail-stock" style="margin-top:8px;"></div>
+        </div>
+      </div>
+      <h4 style="font-size:0.85rem;font-weight:700;margin-bottom:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.04em;">Технические характеристики</h4>
+      <table class="spec-table" id="detail-specs"></table>
+      <div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;">
+        <div style="font-size:1.3rem;font-weight:700;color:var(--primary);" id="detail-price"></div>
+        <button class="btn btn-primary" id="detail-add-btn">+ Добавить в конфигурацию</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast-container" id="toasts"></div>
+
+<script src="/static/js/common.js"></script>
+<script>
+let allComponents = [];
+let cart = {};
+let activeCat = '';
+let currentDetailComp = null;
+
+async function init() {
+  const user = await loadCurrentUser();
+  updateNavAuth(user);
+  await loadComponents();
+  renderComponents();
+  const cat = new URLSearchParams(location.search).get('cat');
+  if (cat) setCategory(cat);
+}
+
+async function loadComponents() {
+  try { allComponents = await http.get('/api/components'); }
+  catch(e) { toast.error('Ошибка загрузки каталога'); }
+}
+
+function setCategory(cat) {
+  activeCat = cat;
+  document.querySelectorAll('.category-tab').forEach(t => t.classList.toggle('active', t.dataset.cat === cat));
+  renderComponents();
+}
+
+document.querySelectorAll('.category-tab').forEach(t => t.addEventListener('click', () => setCategory(t.dataset.cat)));
+document.getElementById('search').addEventListener('input', renderComponents);
+
+function renderComponents() {
+  const q = document.getElementById('search').value.toLowerCase();
+  let list = allComponents.filter(c => {
+    const matchCat = !activeCat || c.category === activeCat;
+    const matchQ = !q || c.name.toLowerCase().includes(q) || c.brand.toLowerCase().includes(q);
+    return matchCat && matchQ;
+  });
+
+  const grid = document.getElementById('components-grid');
+  if (!list.length) {
+    grid.innerHTML = '<div style="grid-column:span 2;text-align:center;padding:48px;color:var(--text-muted);">Ничего не найдено</div>';
+    return;
+  }
+
+  grid.innerHTML = list.map((c, idx) => {
+    const inCart = cart[c.id];
+    const catIcon = catIcons[c.category] || '📦';
+    return `<div class="component-card ${c.in_stock?'':'out-of-stock'} ${inCart?'selected':''}"
+      onclick="openDetail('${c.id}')"
+      style="animation:slideUp 0.35s ease both;animation-delay:${Math.min(idx*0.04,0.4)}s">
+      ${inCart
+        ? `<div class="component-badge badge-selected">✓ ×${inCart.qty}</div>`
+        : `<div class="component-badge ${c.in_stock?'badge-instock':'badge-outstock'}">${c.in_stock?'В наличии':'Нет'}</div>`}
+      <div class="component-img"><img src="${c.image}" alt="${c.name}"
+        onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2280%22 height=%2260%22%3E%3Crect width=%2280%22 height=%2260%22 fill=%22%23F1F5F9%22 rx=%224%22/%3E%3Ctext x=%2240%22 y=%2236%22 text-anchor=%22middle%22 font-size=%2224%22%3E${catIcon}%3C/text%3E%3C/svg%3E'"></div>
+      <div class="component-name">${c.name}</div>
+      <div class="component-brand">${c.brand} · ${catLabels[c.category]||c.category}</div>
+      <div class="component-price">${fmt.money(c.price)}</div>
+    </div>`;
+  }).join('');
+}
+
+function openDetail(id) {
+  const c = allComponents.find(x => x.id === id);
+  if (!c) return;
+  currentDetailComp = c;
+  document.getElementById('detail-name').textContent = c.name;
+  document.getElementById('detail-brand').textContent = `${c.brand} · ${c.model}`;
+  document.getElementById('detail-desc').textContent = c.description;
+  document.getElementById('detail-img').src = c.image;
+  document.getElementById('detail-stock').innerHTML = c.in_stock
+    ? '<span class="badge badge-success">✓ В наличии</span>'
+    : '<span class="badge badge-danger">✕ Нет в наличии</span>';
+  document.getElementById('detail-price').textContent = fmt.money(c.price);
+
+  const specs = c.specs || {};
+  document.getElementById('detail-specs').innerHTML = Object.entries(specs).map(([k,v]) =>
+    `<tr><td>${k}</td><td>${v}</td></tr>`
+  ).join('');
+
+  const addBtn = document.getElementById('detail-add-btn');
+  if (cart[c.id]) {
+    addBtn.textContent = '+ Добавить ещё';
+    addBtn.disabled = false;
+  } else {
+    addBtn.textContent = c.in_stock ? '+ Добавить в конфигурацию' : 'Нет в наличии';
+    addBtn.disabled = !c.in_stock;
+  }
+  addBtn.onclick = () => { addToCart(c.id); closeModal('detail-modal'); };
+  openModal('detail-modal');
+}
+
+function addToCart(id) {
+  const c = allComponents.find(x => x.id === id);
+  if (!c || !c.in_stock) return;
+  if (cart[id]) cart[id].qty++;
+  else cart[id] = { component: c, qty: 1 };
+  renderCart(); renderComponents();
+  toast.success(`${c.name} добавлен`);
+}
+
+function changeQty(id, delta) {
+  if (!cart[id]) return;
+  cart[id].qty += delta;
+  if (cart[id].qty <= 0) delete cart[id];
+  renderCart(); renderComponents();
+}
+
+function clearCart() {
+  cart = {};
+  renderCart(); renderComponents();
+}
+
+function renderCart() {
+  const items = Object.values(cart);
+  document.getElementById('cart-count').textContent = items.reduce((s,i)=>s+i.qty,0);
+
+  const cartEl = document.getElementById('cart-items');
+  if (!items.length) {
+    cartEl.innerHTML = `<div class="cart-empty">
+      <svg width="40" height="40" viewBox="0 0 40 40" fill="none" style="margin:0 auto 8px;opacity:0.3"><rect x="8" y="12" width="24" height="20" rx="3" stroke="white" stroke-width="2"/><path d="M14 12V10a6 6 0 0112 0v2" stroke="white" stroke-width="2"/></svg>
+      Добавьте оборудование<br>из каталога</div>`;
+    document.getElementById('cart-total').textContent = '0 ₽';
+    return;
+  }
+
+  cartEl.innerHTML = items.map(({component:c, qty}) => `
+    <div class="cart-item">
+      <div class="cart-item-name">${c.name}</div>
+      <div class="cart-item-qty">
+        <button class="qty-btn" onclick="changeQty('${c.id}',-1)">−</button>
+        <span class="qty-val">${qty}</span>
+        <button class="qty-btn" onclick="changeQty('${c.id}',1)">+</button>
+      </div>
+      <div class="cart-item-price">${fmt.money(c.price * qty)}</div>
+    </div>`).join('');
+
+  const total = items.reduce((s,{component:c,qty})=>s+c.price*qty, 0);
+  document.getElementById('cart-total').textContent = fmt.money(total);
+}
+
+async function saveConfig() {
+  const user = await loadCurrentUser();
+  if (!user) { toast.error('Войдите в систему для сохранения'); setTimeout(()=>location.href='/login',1200); return; }
+  const items = Object.values(cart);
+  if (!items.length) { toast.error('Конфигурация пуста'); return; }
+  const name = document.getElementById('cart-name').value.trim() || `Конфигурация ${new Date().toLocaleDateString('ru-RU')}`;
+  try {
+    await http.post('/api/configurations', {
+      name,
+      items: items.map(({component,qty}) => ({ component_id: component.id, quantity: qty }))
+    });
+    toast.success('Конфигурация сохранена!');
+    setTimeout(() => location.href = '/cabinet', 1200);
+  } catch(e) { toast.error(e.message); }
+}
+
+async function importConfig(input) {
+  const file = input.files[0]; if (!file) return;
+  const user = await loadCurrentUser();
+  if (!user) { toast.error('Войдите для импорта'); return; }
+  try {
+    const text = await file.text();
+    const data = JSON.parse(text);
+    await http.post('/api/configurations/import', data);
+    toast.success('Конфигурация импортирована!');
+    setTimeout(() => location.href = '/cabinet', 1200);
+  } catch(e) { toast.error('Ошибка импорта: ' + e.message); }
+  input.value = '';
+}
+
+init();
+</script>
+</body>
+</html>
