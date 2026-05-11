@@ -1,3 +1,0 @@
-Database password:
-
-myfirstdatabasee
